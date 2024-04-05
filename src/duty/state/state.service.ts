@@ -79,7 +79,8 @@ export class StateService {
       pipeline.on('end', () => resolve(true));
     }).finally(() => pipeline.destroy());
     const baseReward = Math.trunc(
-      BigNumber.from(64 * 10 ** 9)
+      // BASE_REWARD_FACTOR (in Gwei)
+      BigNumber.from(25 * 10 ** 9)
         .div(bigNumberSqrt(BigNumber.from(activeValidatorsEffectiveBalance).mul(10 ** 9)))
         .toNumber(),
     );
