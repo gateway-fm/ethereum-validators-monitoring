@@ -59,7 +59,7 @@ export class ConsensusProviderService {
   protected apiUrls: string[];
   protected version = '';
   protected genesisTime = 0;
-  protected defaultMaxSlotDeepCount = 32;
+  protected defaultMaxSlotDeepCount: number;
   protected latestSlot = { slot: 0, fetchTime: 0 };
 
   protected endpoints = {
@@ -83,6 +83,7 @@ export class ConsensusProviderService {
     protected readonly cache: BlockCacheService,
   ) {
     this.apiUrls = config.get('CL_API_URLS') as NonEmptyArray<string>;
+    this.defaultMaxSlotDeepCount = config.get('FETCH_INTERVAL_SLOTS')
   }
 
   public async getVersion(): Promise<string> {

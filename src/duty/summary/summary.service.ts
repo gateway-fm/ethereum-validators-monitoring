@@ -4,6 +4,8 @@ import { merge } from 'lodash';
 import { ValStatus } from 'common/consensus-provider';
 import { Epoch } from 'common/consensus-provider/types';
 import { range } from 'common/functions/range';
+import { ConfigService } from 'common/config';
+
 
 type BlockNumber = number;
 type ValidatorId = number;
@@ -81,8 +83,9 @@ export type EpochStorage = Map<Epoch, EpochInfo>;
 export class SummaryService {
   protected storage: EpochStorage;
 
-  constructor() {
+  constructor(protected readonly config: ConfigService,) {
     this.storage = new Map<Epoch, EpochInfo>();
+    
   }
 
   public epoch(epoch: Epoch) {
@@ -116,6 +119,7 @@ export class SummaryService {
   }
 
   private init(epoch: Epoch) {
+    const slots_in_epoch = this.config.get('FETCH_INTERVAL_SLOTS');
     this.storage.set(epoch, {
       summary: new Map(),
       meta: {
@@ -124,15 +128,16 @@ export class SummaryService {
           active_validators_total_increments: 0n,
           base_reward: 0,
         },
+        // Need to use FETCH_INTERVAL_SLOTS instead of hardcoded values here
         attestation: {
           participation: { source: 0n, target: 0n, head: 0n },
           blocks_attestations: new Map<BlockNumber, { source?: number[]; target?: number[]; head?: number[] }[]>(
-            range(epoch * 32 - 32, epoch * 32 + 32).map((b) => [b, []]),
+            range(epoch * slots_in_epoch - slots_in_epoch, epoch * slots_in_epoch + slots_in_epoch).map((b) => [b, []]),
           ),
-          blocks_rewards: new Map<BlockNumber, bigint>(range(epoch * 32 - 32, epoch * 32 + 32).map((b) => [b, 0n])),
+          blocks_rewards: new Map<BlockNumber, bigint>(range(epoch * slots_in_epoch - slots_in_epoch, epoch * slots_in_epoch + slots_in_epoch).map((b) => [b, 0n])),
         },
         sync: {
-          blocks_rewards: new Map<BlockNumber, bigint>(range(epoch * 32 - 32, epoch * 32 + 32).map((b) => [b, 0n])),
+          blocks_rewards: new Map<BlockNumber, bigint>(range(epoch * slots_in_epoch - slots_in_epoch, epoch * slots_in_epoch + slots_in_epoch).map((b) => [b, 0n])),
           per_block_reward: 0,
           blocks_to_sync: [],
         },

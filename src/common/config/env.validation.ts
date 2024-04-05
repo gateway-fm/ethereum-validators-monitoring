@@ -182,7 +182,7 @@ export class EnvironmentVariables {
   public DENCUN_FORK_EPOCH: Epoch;
 
   @IsNumber()
-  @Min(32)
+  @Min(1) // Not sure what whould be the minimum value here
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
   public FETCH_INTERVAL_SLOTS = 32;
 
