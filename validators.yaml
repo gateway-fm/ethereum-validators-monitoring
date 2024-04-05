@@ -1,0 +1,5 @@
+operators:
+  - name: gtw-batch-1
+    keys:
+      - '0xb9c86d088e12bd92b79c9333161e3a759a68021f0e8a75819a1c59b35c9fd3e5e404ba54d21b9233b6ac123df163cecf'
+      - '0xb7c1ac4941e49b79aefc84c638abb7c337e382325cef7cb37cac7740a3fed1fe4107efd3e267cface5b6205761a88813'
