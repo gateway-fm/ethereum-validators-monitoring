@@ -5,8 +5,8 @@ Gnosis key params https://docs.gnosischain.com/about/networks/mainnet#key-parame
 # Build and push
 
 ```bash
-$ docker build -t gatewayfm/ethereum-validators-monitoring:4.6.0-gnosis-$(git rev-parse --short HEAD) --platform linux/amd64 .
-$ docker push gatewayfm/ethereum-validators-monitoring:4.6.0-gnosis-$(git rev-parse --short HEAD)
+$ docker buildx build -t gatewayfm/ethereum-validators-monitoring:4.8.0-gnosis-$(git rev-parse --short HEAD) --platform linux/amd64 .
+$ docker push gatewayfm/ethereum-validators-monitoring:4.8.0-gnosis-$(git rev-parse --short HEAD)
 ```
 
 # 🐢 ethereum-validators-monitoring (aka balval)
