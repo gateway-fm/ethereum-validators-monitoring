@@ -25,66 +25,59 @@ routes notifications to Discord channel via **alertmanager-discord**.
 You can switch working mode by providing `WORKING_MODE` environment variable with one of the following values:
 
 ### `finalized`
-
 Default working mode. The service will fetch validators info from finalized states (the latest finalized epoch is 2 epochs back from `head`).
 It is more stable and reliable because all data is already finalized.
 
 **Pros**:
-
-- No errors due to reorgs
-- Less rewards calculation errors
-- Accurate data in alerts and dashboard
+* No errors due to reorgs
+* Less rewards calculation errors
+* Accurate data in alerts and dashboard
 
 **Cons**:
-
-- 2 epochs delay in processing and critical alerts will be given with 2 epochs delay
-- In case of long finality the app will not monitor and will wait for the finality
+* 2 epochs delay in processing and critical alerts will be given with 2 epochs delay
+* In case of long finality the app will not monitor and will wait for the finality
 
 ### `head`
-
 Alternative working mode. The service will fetch validators info from non-finalized states.
 It is less stable and reliable because of data is not finalized yet. There can be some calculation errors because of reorgs.
 
 **Pros**:
-
-- Less delay in processing and critical alerts will be given with less delay
-- In case of long finality the app will monitor and will not wait for the finality
+* Less delay in processing and critical alerts will be given with less delay
+* In case of long finality the app will monitor and will not wait for the finality
 
 **Cons**:
-
-- Errors due to reorgs
-- More rewards calculation errors
-- Possible inaccurate data in alerts and dashboard
+* Errors due to reorgs
+* More rewards calculation errors
+* Possible inaccurate data in alerts and dashboard
 
 ## Dashboards
 
 There are three dashboards in Grafana:
-
-- **Validators** - shows aggregated data about performance for all monitored validators
-  ![Validators](.images/validators-dashboard.png)
-- **NodeOperator** - shows aggregated data about performance for each monitored node operator
-  ![NodeOperators](.images/nodeoperators-dashboard.png)
-- **Rewards & Penalties** - shows aggregated data about rewards, penalties, and missed rewards for each monitored node operator
-  ![Rewards & Penalties](.images/rewards-penalties-dashboard.png)
+* **Validators** - shows aggregated data about performance for all monitored validators
+![Validators](.images/validators-dashboard.png)
+* **NodeOperator** - shows aggregated data about performance for each monitored node operator
+![NodeOperators](.images/nodeoperators-dashboard.png)
+* **Rewards & Penalties** - shows aggregated data about rewards, penalties, and missed rewards for each monitored node operator
+![Rewards & Penalties](.images/rewards-penalties-dashboard.png)
 
 ## Alerts
 
 There are several default alerts which are triggered by Prometheus rules:
 
-- General:
-  - 🔪 Slashed validators
-  - 💸 Operators with negative balance delta
-- Proposals:
-  - 📥 Operators with missed block propose
-  - 📈📥 Operators with missed block propose (on possible high reward validators)
-- Sync:
-  - 🔄 Operators with bad sync participation
-  - 📈🔄 Operators with bad sync participation (on possible high reward validators)
-- Attestations:
-  - 📝❌ Operators with missed attestation
-  - 📝🐢 Operators with high inc. delay attestation
-  - 📝🏷️ Operators with two invalid attestation property (head/target/source)
-  - 📈📝❌ Operators with missed attestation (on possible high reward validators)
+* General:
+  * 🔪 Slashed validators
+  * 💸 Operators with negative balance delta
+* Proposals:
+  * 📥 Operators with missed block propose
+  * 📈📥 Operators with missed block propose (on possible high reward validators)
+* Sync:
+  * 🔄 Operators with bad sync participation
+  * 📈🔄 Operators with bad sync participation (on possible high reward validators)
+* Attestations:
+  * 📝❌ Operators with missed attestation
+  * 📝🐢 Operators with high inc. delay attestation
+  * 📝🏷️ Operators with two invalid attestation property (head/target/source)
+  * 📈📝❌ Operators with missed attestation (on possible high reward validators)
 
 ## First run
 
@@ -101,20 +94,16 @@ and when the application completes its first cycle, you can restart your instanc
 1. Use `.env.example.compose` file content to create your own `.env` file
 2. Build app image via `docker-compose build app`
 3. Set owner for validators registry sources
-
 ```bash
 chown -R 1000:1000 ./docker/validators
 ```
-
 4. Create `.volumes` directory from `docker` directory:
-
 ```bash
 cp -r docker .volumes
 chown -R 65534:65534 .volumes/prometheus
 chown -R 65534:65534 .volumes/alertmanager
 chown -R 472:472 .volumes/grafana
 ```
-
 5. Run `docker-compose up -d`
 6. Open Grafana UI at `http://localhost:8082/`
    (login: `admin`, password: `MYPASSWORT`) and wait
@@ -126,23 +115,18 @@ chown -R 472:472 .volumes/grafana
 2. Run `yarn build`
 3. Tweak `.env` file from `.env.example.local`
 4. Run Clickhouse to use as bot DB
-
 ```bash
 docker-compose up -d clickhouse
 ```
-
 5. Set owner for validators registry sources
-
 ```bash
 chown -R 1000:1000 ./docker/validators
 ```
-
 6. Run `yarn start:prod`
 
 ## Use custom validators list
 
 By default, monitoring bot fetches validator keys from Lido contract, but you can monitor your own validators:
-
 1. Set `VALIDATOR_REGISTRY_SOURCE` env var to `file`
 2. Create file with keys by example [here](docker/validators/custom_mainnet.yaml)
 3. Set `VALIDATOR_REGISTRY_FILE_SOURCE_PATH` env var to `<path to your file>`
@@ -153,7 +137,6 @@ If you want to implement your own source, it must match [RegistrySource interfac
 
 By default, storage keep the data with `Inf.` time to live.
 It can be changed by the TTL policy for Clickhouse:
-
 ```
 # Mainnet
 ALTER TABLE validators_summary MODIFY TTL toDateTime(1606824023 + (epoch * 32 * 12)) + INTERVAL 3 MONTH;
@@ -168,358 +151,390 @@ ALTER TABLE validators_summary MODIFY TTL toDateTime(1616508000 + (epoch * 32 * 
 ## Application Env variables
 
 ---
-
 `LOG_LEVEL` - Application log level.
-
-- **Required:** false
-- **Values:** error / warning / notice / info / debug
-- **Default:** info
-
+* **Required:** false
+* **Values:** error / warning / notice / info / debug
+* **Default:** info
 ---
-
 `LOG_FORMAT` - Application log format.
-
-- **Required:** false
-- **Values:** simple / json
-- **Default:** json
-
+* **Required:** false
+* **Values:** simple / json
+* **Default:** json
 ---
-
 `WORKING_MODE` - Application working mode.
-
-- **Required:** false
-- **Values:** finalized / head
-- **Default:** finalized
-
+* **Required:** false
+* **Values:** finalized / head
+* **Default:** finalized
 ---
-
 `DB_HOST` - Clickhouse server host.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `DB_USER` - Clickhouse server user.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `DB_PASSWORD` - Clickhouse server password.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `DB_NAME` - Clickhouse server DB name.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `DB_PORT` - Clickhouse server port.
-
-- **Required:** false
-- **Default:** 8123
-
+* **Required:** false
+* **Default:** 8123
 ---
-
 `HTTP_PORT` - Port for Prometheus HTTP server in application on the container.
-
-- **Required:** false
-- **Default:** 8080
-- **Note:** if this variable is changed, it also should be updated in [prometheus.yml](docker/prometheus/prometheus.yml)
-
+* **Required:** false
+* **Default:** 8080
+* **Note:** if this variable is changed, it also should be updated in [prometheus.yml](docker/prometheus/prometheus.yml)
 ---
-
 `EXTERNAL_HTTP_PORT` - Port for Prometheus HTTP server in application that is exposed to the host.
-
-- **Required:** false
-- **Default:** `HTTP_PORT`
-
+* **Required:** false
+* **Default:** `HTTP_PORT`
 ---
-
 `DB_MAX_RETRIES` - Max retries for each query to DB.
-
-- **Required:** false
-- **Default:** 10
-
+* **Required:** false
+* **Default:** 10
 ---
-
 `DB_MIN_BACKOFF_SEC` - Min backoff for DB query retrier (sec).
-
-- **Required:** false
-- **Default:** 1
-
+* **Required:** false
+* **Default:** 1
 ---
-
 `DB_MAX_BACKOFF_SEC` - Max backoff for DB query retrier (sec).
-
-- **Required:** false
-- **Default:** 120
-
+* **Required:** false
+* **Default:** 120
 ---
-
 `DRY_RUN` - Run application in dry mode. This means that it runs a main cycle once every 24 hours.
-
-- **Required:** false
-- **Values:** true / false
-- **Default:** false
-
+* **Required:** false
+* **Values:** true / false
+* **Default:** false
 ---
-
 `NODE_ENV` - Node.js environment.
-
-- **Required:** false
-- **Values:** development / production / staging / testnet / test
-- **Default:** development
-
+* **Required:** false
+* **Values:** development / production / staging / testnet / test
+* **Default:** development
 ---
-
 `ETH_NETWORK` - Ethereum network ID for connection execution layer RPC.
-
-- **Required:** true
-- **Values:** 1 (Mainnet) / 5 (Goerli) / 17000 (Holesky)
-
+* **Required:** true
+* **Values:** 1 (Mainnet) / 5 (Goerli) / 17000 (Holesky)
 ---
-
 `EL_RPC_URLS` - Ethereum execution layer comma-separated RPC URLs.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `CL_API_URLS` - Ethereum consensus layer comma-separated API URLs.
-
-- **Required:** true
-
+* **Required:** true
 ---
-
 `CL_API_RETRY_DELAY_MS` - Ethereum consensus layer request retry delay (ms).
-
-- **Required:** false
-- **Default:** 500
-
+* **Required:** false
+* **Default:** 500
 ---
-
 `CL_API_GET_RESPONSE_TIMEOUT` - Ethereum consensus layer GET response (header) timeout (ms).
-
-- **Required:** false
-- **Default:** 15000
-
+* **Required:** false
+* **Default:** 15000
 ---
-
 `CL_API_MAX_RETRIES` - Ethereum consensus layer max retries for all requests.
-
-- **Required:** false
-- **Default:** 1 (means that request will be executed once)
-
+* **Required:** false
+* **Default:** 1 (means that request will be executed once)
 ---
-
 `CL_API_GET_BLOCK_INFO_MAX_RETRIES` - Ethereum consensus layer max retries for fetching block info.
 Independent of `CL_API_MAX_RETRIES`.
-
-- **Required:** false
-- **Default:** 1 (means that request will be executed once)
-
+* **Required:** false
+* **Default:** 1 (means that request will be executed once)
 ---
-
+`CL_API_MAX_SLOT_DEEP_COUNT` - Maximum number of slots that the application uses to find a not missed consensus-layer
+slot. The application will use this value to find the next (or previous) not-missed slot next to (or behind) the
+specific slot. If the processed slot and all next (or previous) `CL_API_MAX_SLOT_DEEP_COUNT` slots are missed, the app
+will throw an error.
+* **Required:** false
+* **Default:** 32
+---
 `FETCH_INTERVAL_SLOTS` - Count of slots in Ethereum consensus layer epoch.
-
-- **Required:** false
-- **Default:** 32
-
+* **Required:** false
+* **Default:** 32
 ---
-
 `CHAIN_SLOT_TIME_SECONDS` - Ethereum consensus layer time slot size (sec).
-
-- **Required:** false
-- **Default:** 12
-
+* **Required:** false
+* **Default:** 12
 ---
-
 `START_EPOCH` - Ethereum consensus layer epoch for start application.
-
-- **Required:** false
-- **Default:** 155000
-
+* **Required:** false
+* **Default:** 155000
 ---
-
-`DENCUN_FORK_EPOCH` - Ethereum consensus layer epoch when the Dencun hard fork has been released. This value must be set
-only for custom networks that support the Dencun hard fork. If the value of this variable is not specified for a custom
-network, it is supposed that this network doesn't support Dencun. For officially supported networks (Mainnet, Goerli and
-Holesky) this value should be omitted.
-
-- **Required:** false
-
----
-
 `VALIDATOR_REGISTRY_SOURCE` - Validators registry source.
-
-- **Required:** false
-- **Values:** lido (Lido NodeOperatorsRegistry module keys) / keysapi (Lido keys from multiple modules) / file
-- **Default:** lido
-
+* **Required:** false
+* **Values:** lido (Lido NodeOperatorsRegistry module keys) / keysapi (Lido keys from multiple modules) / file
+* **Default:** lido
 ---
-
 `VALIDATOR_REGISTRY_FILE_SOURCE_PATH` - Validators registry file source path.
-
-- **Required:** false
-- **Default:** ./docker/validators/custom_mainnet.yaml
-- **Note:** it makes sense to change default value if `VALIDATOR_REGISTRY_SOURCE` is set to "file"
-
+* **Required:** false
+* **Default:** ./docker/validators/custom_mainnet.yaml
+* **Note:** it makes sense to change default value if `VALIDATOR_REGISTRY_SOURCE` is set to "file"
 ---
-
 `VALIDATOR_REGISTRY_LIDO_SOURCE_SQLITE_CACHE_PATH` - Validators registry lido source sqlite cache path.
-
-- **Required:** false
-- **Default:** ./docker/validators/lido_mainnet.db
-- **Note:** it makes sense to change default value if `VALIDATOR_REGISTRY_SOURCE` is set to "lido"
-
+* **Required:** false
+* **Default:** ./docker/validators/lido_mainnet.db
+* **Note:** it makes sense to change default value if `VALIDATOR_REGISTRY_SOURCE` is set to "lido"
 ---
-
-`VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS` - Comma-separated list of URLs to [Lido Keys API service](https://github.com/lidofinance/lido-keys-api).
-
-- **Required:** false
-- **Note:** will be used only if `VALIDATOR_REGISTRY_SOURCE` is set to "keysapi"
-
+`VALIDATOR_REGISTRY_KEYSAPI_SOURCE_URLS` - Comma-separated list of URLs to
+[Lido Keys API service](https://github.com/lidofinance/lido-keys-api).
+* **Required:** false
+* **Note:** will be used only if `VALIDATOR_REGISTRY_SOURCE` is set to "keysapi"
 ---
-
 `VALIDATOR_REGISTRY_KEYSAPI_SOURCE_RETRY_DELAY_MS` - Retry delay for requests to Lido Keys API service (ms).
-
-- **Required:** false
-- **Default:** 500
-
+* **Required:** false
+* **Default:** 500
 ---
-
 `VALIDATOR_REGISTRY_KEYSAPI_SOURCE_RESPONSE_TIMEOUT` - Response timeout (ms) for requests to Lido Keys API service (ms).
-
-- **Required:** false
-- **Default:** 30000
-
+* **Required:** false
+* **Default:** 30000
 ---
-
 `VALIDATOR_REGISTRY_KEYSAPI_SOURCE_MAX_RETRIES` - Max retries for each request to Lido Keys API service.
-
-- **Required:** false
-- **Default:** 2
-
+* **Required:** false
+* **Default:** 2
 ---
-
-`VALIDATOR_USE_STUCK_KEYS_FILE` - Use a file with list of validators that are stuck and should be excluded from the monitoring metrics.
-
-- **Required:** false
-- **Values:** true / false
-- **Default:** false
-
+`VALIDATOR_USE_STUCK_KEYS_FILE` - Use a file with list of validators that are stuck and should be excluded from the
+monitoring metrics.
+* **Required:** false
+* **Values:** true / false
+* **Default:** false
 ---
-
-`VALIDATOR_STUCK_KEYS_FILE_PATH` - Path to file with list of validators that are stuck and should be excluded from the monitoring metrics.
-
-- **Required:** false
-- **Default:** ./docker/validators/stuck_keys.yaml
-- **Note:** will be used only if `VALIDATOR_USE_STUCK_KEYS_FILE` is true
-
+`VALIDATOR_STUCK_KEYS_FILE_PATH` - Path to file with list of validators that are stuck and should be excluded from the
+monitoring metrics.
+* **Required:** false
+* **Default:** ./docker/validators/stuck_keys.yaml
+* **Note:** will be used only if `VALIDATOR_USE_STUCK_KEYS_FILE` is true
 ---
-
-`SYNC_PARTICIPATION_DISTANCE_DOWN_FROM_CHAIN_AVG` - Distance (down) from Blockchain Sync Participation average after which we think that our sync participation is bad.
-
-- **Required:** false
-- **Default:** 0
-
+`SYNC_PARTICIPATION_DISTANCE_DOWN_FROM_CHAIN_AVG` - Distance (down) from Blockchain Sync Participation average after
+which we think that our sync participation is bad.
+* **Required:** false
+* **Default:** 0
 ---
-
-`SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` - Number epochs after which we think that our sync participation is bad and alert about that.
-
-- **Required:** false
-- **Default:** 3
-
+`SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` - Number epochs after which we think that our sync participation is bad
+and alert about that.
+* **Required:** false
+* **Default:** 3
 ---
-
 `BAD_ATTESTATION_EPOCHS` - Number epochs after which we think that our attestation is bad and alert about that.
-
-- **Required:** false
-- **Default:** 3
-
+* **Required:** false
+* **Default:** 3
 ---
-
-`CRITICAL_ALERTS_ALERTMANAGER_URL` - If passed, application sends additional critical alerts about validators performance to Alertmanager.
-
-- **Required:** false
-
+`CRITICAL_ALERTS_ALERTMANAGER_URL` - If passed, application sends additional critical alerts about validators
+performance to Alertmanager.
+* **Required:** false
 ---
-
-`CRITICAL_ALERTS_MIN_VAL_COUNT` - Critical alerts will be sent for Node Operators with validators count greater this value.
-
-- **Required:** false
-- **Default:** 100
-
+`CRITICAL_ALERTS_MIN_VAL_COUNT` - Critical alerts will be sent for Node Operators with validators count greater or equal
+to this value.
+* **Required:** false
+* **Default:** 100
 ---
+`CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT` - Sets the minimum conditions for triggering critical alerts based on the number
+of active validators for node operators in a specific module.
 
+The value must be in JSON format. Example:
+`{ "0": { "minActiveCount": 100, "affectedShare": 0.33, "minAffectedCount": 1000 } }`.
+
+The numeric key represents the module ID. Settings under the `0` key apply to all modules unless overridden by settings
+for specific module IDs. Settings for specific module IDs take precedence over the `0` key.
+
+A critical alert is sent if:
+
+* The number of active validators for a node operator meets or exceeds `minActiveCount`.
+* The number of affected validators:
+  * Is at least `affectedShare` of the total validators for the node operator, OR
+  * Exceeds or equal to `minAffectedCount`.
+* Value in the `CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT` for specific module is not overridden by
+  `CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT`.
+
+If no settings are provided for a specific module or the 0 key, default values are used:
+`{ "minActiveCount": CRITICAL_ALERTS_MIN_VAL_COUNT, "affectedShare": 0.33, "minAffectedCount": 1000 }`.
+* **Required:** false
+* **Default:** {}
+---
+`CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT` - Defines the minimum number of affected validators for a node operator in a
+specific module for which a critical alert should be sent.
+
+The value must be in JSON format, for example: `{ "0": 100, "3": 50 }`.  The numeric key represents the module ID. The
+value for the key `0` applies to all modules. Values for non-zero keys apply only to the specified module and take
+precedence over the `0` key.
+
+This variable takes priority over `CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT` and `CRITICAL_ALERTS_MIN_VAL_COUNT`. If no
+value is set for a specific module or the `0` key, the rules from the other two variables will apply instead.
+* **Required:** false
+* **Default:** {}
+---
 `CRITICAL_ALERTS_ALERTMANAGER_LABELS` - Additional labels for critical alerts.
-Must be in JSON string format. Example - '{"a":"valueA","b":"valueB"}'.
-
-- **Required:** false
-- **Default:** {}
-
+Must be in JSON string format. Example: `{ "a": "valueA", "b": "valueB" }`.
+* **Required:** false
+* **Default:** {}
 ---
 
 ## Application critical alerts (via Alertmanager)
 
-In addition to alerts based on Prometheus metrics you can receive special critical alerts based on beaconchain aggregates from app.
+In addition to alerts based on Prometheus metrics you can receive special critical alerts based on Beacon Chain
+aggregates from app.
 
 You should pass env var `CRITICAL_ALERTS_ALERTMANAGER_URL=http://<alertmanager_host>:<alertmanager_port>`.
 
-And if `ethereum_validators_monitoring_data_actuality < 1h` it allows you to receive alerts from table bellow
+Critical alerts for modules are controlled by three environment variables, listed here with their priority (from lowest
+to highest):
+```
+CRITICAL_ALERTS_MIN_VAL_COUNT: number;
+CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT: {
+  <moduleIndex>: {
+      minActiveCount: number,
+      affectedShare: number,
+      minAffectedCount: number,
+   }
+};
+CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT: {
+   <moduleIndex>: number
+};
+```
 
-| Alert name                 | Description                                                                                                     | If fired repeat | If value increased repeat |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------- | ------------------------- |
-| CriticalSlashing           | At least one validator was slashed                                                                              | instant         | -                         |
-| CriticalMissedProposes     | More than 1/3 blocks from Node Operator duties was missed in the last 12 hours                                  | every 6h        | -                         |
-| CriticalNegativeDelta      | More than 1/3 Node Operator validators with negative balance delta (between current and 6 epochs ago)           | every 6h        | every 1h                  |
-| CriticalMissedAttestations | More than 1/3 Node Operator validators with missed attestations in the last {{ BAD_ATTESTATION_EPOCHS }} epochs | every 6h        | every 1h                  |
+The following rules are applied (listed in order of increasing priority, the next rule overrides the previous one).
+
+1. **Global Fallback** (`CRITICAL_ALERTS_MIN_VAL_COUNT`). If this variable is set, it acts as a default for modules by
+   creating an implicit rule:
+```
+{
+   "0": {
+      "minActiveCount": CRITICAL_ALERTS_MIN_VAL_COUNT,
+      "affectedShare": 0.33,
+      "minAffectedCount": 1000
+   }
+}
+```
+
+2. **Global Rules for Active Validators** (`CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT`). Default rules apply to all modules
+   (key `0`) unless overridden.
+```
+CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT = {
+   "0": {
+      "minActiveCount": <integer>,
+      "affectedShare": <0.xx>,
+      "minAffectedCount": <integer>,
+   }
+}
+```
+A critical alert is triggered for a module if **both** conditions are met:
+* Active validators exceed or equal to `minActiveCount`.
+* Affected validators exceed or equal to either `minAffectedCount` or `affectedShare` of the total active validators.
+
+3. **Global Rules for Affected Validators** (`CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT`). Default rules apply to all
+   modules (key `0`) unless overridden.
+```
+CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT = {
+   "0": <integer>
+}
+```
+A critical alert is triggered if the number of affected validators exceeds or equal to this value.
+
+4. **Per-Module Rules for Active Validators** (`CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT`). If specific module keys are
+   defined, those values override the global rules for `CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT` and
+   `CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT`.
+```
+CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT = {
+   "n": {
+      "minActiveCount": <integer>,
+      "affectedShare": <0.xx>,
+      "minAffectedCount": <integer>,
+   }
+}
+```
+A critical alert is triggered for those modules if **both** conditions are met:
+
+* Active validators exceed or equal to `minActiveCount`.
+* Affected validators exceed or equal either `minAffectedCount` or `affectedShare` of the total validators.
+
+For modules that don't have keys in the `CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT` the rules defined in the previous steps
+are applied.
+
+5. **Per-Module Rules for Affected Validators** (`CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT`). If specific module keys are
+   defined, those values override all other rules for the module.
+```
+CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT = {
+   "n": <integer>
+}
+```
+A critical alert is triggered if the number of affected validators exceeds or equal to the specified value.
+
+To illustrate these rules let's consider the following sample config:
+```
+CRITICAL_ALERTS_MIN_ACTIVE_VAL_COUNT = {
+  "0": {
+      "minActiveCount": 100,
+      "affectedShare": 0.3,
+      "minAffectedCount": 1000,
+   },
+  "3": {
+      "minActiveCount": 10,
+      "affectedShare": 0.5,
+      "minAffectedCount": 200,
+   },
+};
+CRITICAL_ALERTS_MIN_AFFECTED_VAL_COUNT = {
+   "2": 30
+};
+```
+In this case, critical alerts for any modules except 2 and 3 will be triggered for operators with at least 100 active
+validators and only if either at least 1000 or 30% of active validators are affected by a critical alert (depending on
+what number is less). However, for operators from the 3-rd module, these rules are weakened: a critical alert will be
+triggered for operators with at least 10 active validators and only if either 200 or 50% of validators are affected.
+
+These rules are not applied to the 2-nd module. For this module, critical alerts will be triggered for all operators
+with at least 30 affected validators (no matter how many active validators they have).
+
+If `ethereum_validators_monitoring_data_actuality < 1h` alerts from table bellow are sent.
+
+| Alert name                 | Description                                                                                             | If fired repeat | If value increased repeat |
+|----------------------------|---------------------------------------------------------------------------------------------------------|-----------------|---------------------------|
+| CriticalSlashing           | At least one validator was slashed                                                                      | instant         | -                         |
+| CriticalMissedProposes     | More than 1/3 blocks from Node Operator duties was missed in the last 12 hours                          | every 6h        | -                         |
+| CriticalNegativeDelta      | A certain number of validators with negative balance delta (between current and 6 epochs ago)           | every 6h        | every 1h                  |
+| CriticalMissedAttestations | A certain number of validators with missed attestations in the last `{{BAD_ATTESTATION_EPOCHS}}` epochs | every 6h        | every 1h                  |
+
 
 ## Application metrics
 
 **WARNING: all metrics are prefixed with `ethereum_validators_monitoring_`**
 
-| Metric                                                                    | Labels                           | Description                                                                                                                                                                                 |
-| ------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| validators                                                                | owner, status                    | Count of validators in chain                                                                                                                                                                |
-| user_validators                                                           | nos_name, status                 | Count of validators for each user Node Operator                                                                                                                                             |
-| data_actuality                                                            |                                  | Application data actuality in ms                                                                                                                                                            |
-| fetch_interval                                                            |                                  | The same as `FETCH_INTERVAL_SLOTS`                                                                                                                                                          |
-| sync_participation_distance_down_from_chain_avg                           |                                  | The same as `SYNC_PARTICIPATION_DISTANCE_DOWN_FROM_CHAIN_AVG`                                                                                                                               |
-| epoch_number                                                              |                                  | Current epoch number in app work process                                                                                                                                                    |
-| contract_keys_total                                                       |                                  | Total user validators keys                                                                                                                                                                  |
-| steth_buffered_ether_total                                                |                                  | Buffered Ether (ETH) in Lido contract                                                                                                                                                       |
-| total_balance_24h_difference                                              |                                  | Total user validators balance difference (24 hours)                                                                                                                                         |
-| validator_balances_delta                                                  | nos_name                         | Validators balance delta for each user Node Operator                                                                                                                                        |
-| validator_quantile_001_balances_delta                                     | nos_name                         | Validators 0.1% quantile balances delta for each user Node Operator                                                                                                                         |
-| validator_count_with_negative_balances_delta                              | nos_name                         | Number of validators with negative balances delta for each user Node Operator                                                                                                               |
-| validator_count_with_sync_participation_less_avg                          | nos_name                         | Number of validators with sync committee participation less avg for each user Node Operator                                                                                                 |
-| validator_count_miss_attestation                                          | nos_name                         | Number of validators miss attestation for each user Node Operator                                                                                                                           |
-| validator_count_invalid_attestation                                       | nos_name, reason                 | Number of validators with invalid properties (head, target, source) \ high inc. delay in attestation for each user Node Operator                                                            |
-| validator_count_invalid_attestation_last_n_epoch                          | nos_name, reason, epoch_interval | Number of validators with invalid properties (head, target, source) \ high inc. delay in attestation last `BAD_ATTESTATION_EPOCHS` epoch for each user Node Operator                        |
-| validator_count_miss_attestation_last_n_epoch                             | nos_name, epoch_interval         | Number of validators miss attestation last `BAD_ATTESTATION_EPOCHS` epoch for each user Node Operator                                                                                       |
-| validator_count_high_inc_delay_last_n_epoch                               | nos_name, epoch_interval         | Number of validators with inc. delay > 2 last N epochs for each user Node Operator                                                                                                          |
-| validator_count_invalid_attestation_property_last_n_epoch                 | nos_name, epoch_interval         | Number of validators with two invalid attestation property (head or target or source) last N epochs for each user Node Operator                                                             |
-| high_reward_validator_count_miss_attestation_last_n_epoch                 | nos_name, epoch_interval         | Number of validators miss attestation last `BAD_ATTESTATION_EPOCHS` epoch (with possible high reward in the future) for each user Node Operator                                             |
-| validator_count_with_sync_participation_less_avg_last_n_epoch             | nos_name, epoch_interval         | Number of validators with sync participation less than avg last `SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` epoch for each user Node Operator                                           |
-| high_reward_validator_count_with_sync_participation_less_avg_last_n_epoch | nos_name, epoch_interval         | Number of validators with sync participation less than avg last `SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` epoch (with possible high reward in the future) for each user Node Operator |
-| validator_count_miss_propose                                              | nos_name                         | Number of validators miss propose for each user Node Operator                                                                                                                               |
-| high_reward_validator_count_miss_propose                                  | nos_name                         | Number of validators miss propose (with possible high reward in the future)                                                                                                                 |
-| user_sync_participation_avg_percent                                       |                                  | User sync committee validators participation avg percent                                                                                                                                    |
-| chain_sync_participation_avg_percent                                      |                                  | All sync committee validators participation avg percent                                                                                                                                     |
-| operator_real_balance_delta                                               | nos_name                         | Real operator balance change. Between N and N-1 epochs                                                                                                                                      |
-| operator_calculated_balance_delta                                         | nos_name                         | Calculated operator balance change based on rewards calculation                                                                                                                             |
-| operator_calculated_balance_calculation_error                             | nos_name                         | Diff between calculated and real balance change                                                                                                                                             |
-| avg_chain_reward                                                          | duty                             | Average validator's reward for each duty                                                                                                                                                    |
-| operator_reward                                                           | nos_name, duty                   | Operator's reward for each duty                                                                                                                                                             |
-| avg_chain_missed_reward                                                   | duty                             | Average validator's missed reward for each duty                                                                                                                                             |
-| operator_missed_reward                                                    | nos_name, duty                   | Operator's missed reward for each duty                                                                                                                                                      |
-| avg_chain_penalty                                                         | duty                             | Average validator's penalty for each duty                                                                                                                                                   |
-| operator_penalty                                                          | nos_name, duty                   | Operator's penalty for each duty                                                                                                                                                            |
+| Metric                                                                    | Labels                           | Description                                                                                                                                                                                  |
+|---------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| validators                                                                | owner, status                    | Count of validators in chain                                                                                                                                                                 |
+| user_validators                                                           | nos_name, status                 | Count of validators for each user Node Operator                                                                                                                                              |
+| data_actuality                                                            |                                  | Application data actuality in ms                                                                                                                                                             |
+| fetch_interval                                                            |                                  | The same as `FETCH_INTERVAL_SLOTS`                                                                                                                                                           |
+| sync_participation_distance_down_from_chain_avg                           |                                  | The same as `SYNC_PARTICIPATION_DISTANCE_DOWN_FROM_CHAIN_AVG`                                                                                                                                |
+| epoch_number                                                              |                                  | Current epoch number in app work process                                                                                                                                                     |
+| contract_keys_total                                                       |                                  | Total user validators keys                                                                                                                                                                   |
+| steth_buffered_ether_total                                                |                                  | Buffered Ether (ETH) in Lido contract                                                                                                                                                        |
+| total_balance_24h_difference                                              |                                  | Total user validators balance difference (24 hours)                                                                                                                                          |
+| validator_balances_delta                                                  | nos_name                         | Validators balance delta for each user Node Operator                                                                                                                                         |
+| validator_quantile_001_balances_delta                                     | nos_name                         | Validators 0.1% quantile balances delta for each user Node Operator                                                                                                                          |
+| validator_count_with_negative_balances_delta                              | nos_name                         | Number of validators with negative balances delta for each user Node Operator                                                                                                                |
+| validator_count_with_sync_participation_less_avg                          | nos_name                         | Number of validators with sync committee participation less avg for each user Node Operator                                                                                                  |
+| validator_count_miss_attestation                                          | nos_name                         | Number of validators miss attestation for each user Node Operator                                                                                                                            |
+| validator_count_invalid_attestation                                       | nos_name, reason                 | Number of validators with invalid properties (head, target, source) \ high inc. delay in attestation for each user Node Operator                                                             |
+| validator_count_invalid_attestation_last_n_epoch                          | nos_name, reason, epoch_interval | Number of validators with invalid properties (head, target, source) \ high inc. delay in attestation last `BAD_ATTESTATION_EPOCHS` epoch for each user Node Operator                         |
+| validator_count_miss_attestation_last_n_epoch                             | nos_name, epoch_interval         | Number of validators miss attestation last `BAD_ATTESTATION_EPOCHS` epoch for each user Node Operator                                                                                        |
+| validator_count_high_inc_delay_last_n_epoch                               | nos_name, epoch_interval         | Number of validators with inc. delay > 2 last N epochs for each user Node Operator                                                                                                           |
+| validator_count_invalid_attestation_property_last_n_epoch                 | nos_name, epoch_interval         | Number of validators with two invalid attestation property (head or target or source) last N epochs for each user Node Operator                                                              |
+| high_reward_validator_count_miss_attestation_last_n_epoch                 | nos_name, epoch_interval         | Number of validators miss attestation last `BAD_ATTESTATION_EPOCHS` epoch  (with possible high reward in the future) for each user Node Operator                                             |
+| validator_count_with_sync_participation_less_avg_last_n_epoch             | nos_name, epoch_interval         | Number of validators with sync participation less than avg last `SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` epoch for each user Node Operator                                            |
+| high_reward_validator_count_with_sync_participation_less_avg_last_n_epoch | nos_name, epoch_interval         | Number of validators with sync participation less than avg last `SYNC_PARTICIPATION_EPOCHS_LESS_THAN_CHAIN_AVG` epoch  (with possible high reward in the future) for each user Node Operator |
+| validator_count_miss_propose                                              | nos_name                         | Number of validators miss propose for each user Node Operator                                                                                                                                |
+| high_reward_validator_count_miss_propose                                  | nos_name                         | Number of validators miss propose (with possible high reward in the future)                                                                                                                  |
+| user_sync_participation_avg_percent                                       |                                  | User sync committee validators participation avg percent                                                                                                                                     |
+| chain_sync_participation_avg_percent                                      |                                  | All sync committee validators participation avg percent                                                                                                                                      |
+| operator_real_balance_delta                                               | nos_name                         | Real operator balance change. Between N and N-1 epochs                                                                                                                                       |
+| operator_calculated_balance_delta                                         | nos_name                         | Calculated operator balance change based on rewards calculation                                                                                                                              |
+| operator_calculated_balance_calculation_error                             | nos_name                         | Diff between calculated and real balance change                                                                                                                                              |
+| avg_chain_reward                                                          | duty                             | Average validator's reward for each duty                                                                                                                                                     |
+| operator_reward                                                           | nos_name, duty                   | Operator's reward for each duty                                                                                                                                                              |
+| avg_chain_missed_reward                                                   | duty                             | Average validator's missed reward for each duty                                                                                                                                              |
+| operator_missed_reward                                                    | nos_name, duty                   | Operator's missed reward for each duty                                                                                                                                                       |
+| avg_chain_penalty                                                         | duty                             | Average validator's penalty for each duty                                                                                                                                                    |
+| operator_penalty                                                          | nos_name, duty                   | Operator's penalty for each duty                                                                                                                                                             |
+
 
 ## Release flow
 
