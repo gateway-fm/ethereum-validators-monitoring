@@ -3,10 +3,11 @@ name: Build and Publish Docker Image to gatewayfm internal registry
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Docker image tag (e.g. 4.6.0)"
+      branch:
+        description: "Git branch to build from (e.g. develop or main)"
         required: true
         type: string
+        default: develop
 
 jobs:
   build-and-push:
@@ -19,8 +20,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0       # fetch all history and tags so we can checkout a tag
-          ref: ${{ inputs.tag }}  # checkout the tag supplied via workflow_dispatch
+          fetch-depth: 0
+          ref: ${{ inputs.branch }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -35,5 +36,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            gatewayfm/ethereum-validators-monitoring:${{ inputs.tag }}
+            gatewayfm/ethereum-validators-monitoring:${{ inputs.branch }}
             gatewayfm/ethereum-validators-monitoring:latest
