@@ -121,5 +121,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "resolutions": {
+    "validator": "13.15.22"
   }
 }
